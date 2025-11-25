@@ -12,10 +12,13 @@ import gdg_logo from "@/public/logo.png";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import * as Dialog from "@/components/ui/dialog";
+import * as Table from "@/components/ui/table";
 
 export default function SchedulerPage() {
     const router = useRouter();
     const { user, loading, handleSignOut } = useAuth();
+
     useEffect(() => {
         if (!loading && !user) {
             router.push("/");
@@ -46,6 +49,8 @@ export default function SchedulerPage() {
             endDate: "10 Dec 2024",
         },
     ]);
+
+    // showForm now controls the Dialog open state
     const [showForm, setShowForm] = useState(false);
     const [formData, setFormData] = useState({
         className: "",
@@ -75,7 +80,7 @@ export default function SchedulerPage() {
             startDate: "",
             endDate: "",
         });
-        setShowForm(false);
+        setShowForm(false); // Close dialog on submit
     };
 
     const toggleDay = (day: string) => {
@@ -86,101 +91,97 @@ export default function SchedulerPage() {
                 : [...prev.days, day],
         }));
     };
+
     if (loading || !user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#fbfaf9]">
+            <div className="min-h-screen flex items-center justify-center bg-background">
                 <Spinner />
             </div>
         );
     } else {
         return (
-            <div className="min-h-screen bg-[#fbfaf9]">
-                {/* Dashboard Interface */}
-                <div className="max-w-[1400px] mx-auto">
-                    <div className="relative bg-white rounded-lg shadow-lg border border-ring/30 overflow-hidden m-4">
-                        <div className="flex items-center justify-between p-4 border-b border-ring/30">
-                            <div
-                                className="text-muted-foreground font-serif font-normal text-lg flex items-center hover:cursor-pointer"
-                                onClick={() => (window.location.href = "/")}
-                            >
+            <div className="min-h-screen bg-background pt-4">
+                <div className="relative bg-white rounded-lg shadow-lg border border-ring/30 overflow-hidden mx-4">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-4 border-b border-ring/30">
+                        <div
+                            className="text-muted-foreground font-serif font-normal text-lg flex items-center hover:cursor-pointer"
+                            onClick={() => (window.location.href = "/")}
+                        >
+                            <Image
+                                src={gdg_logo}
+                                alt="GDG Logo"
+                                width={20}
+                                height={20}
+                                className="inline-block mx-2 w-6 h-auto"
+                            />
+                            dormant.
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            {user.Email}
+                            <div className="w-8 h-8 bg-muted-foreground rounded-full">
                                 <Image
-                                    src={gdg_logo}
-                                    alt="GDG Logo"
-                                    width={20}
-                                    height={20}
-                                    className="inline-block mx-2 w-6 h-auto"
+                                    src={user.AvatarURL}
+                                    alt="User Avatar"
+                                    width={32}
+                                    height={32}
+                                    className="w-8 h-8 rounded-full object-cover"
                                 />
-                                dormant.
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                                {user.Email}
-                                <div className="w-8 h-8 bg-muted-foreground rounded-full">
-                                    <Image
-                                        src={user.AvatarURL}
-                                        alt="User Avatar"
-                                        width={32}
-                                        height={32}
-                                        className="w-8 h-8 rounded-full object-cover"
-                                    />
-                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Sidebar and Main Content */}
-                        <div className="flex">
-                            {/* Sidebar */}
-                            <div className="w-48 bg-[#fbfaf9] border-r border-ring/30 p-4">
-                                <nav className="space-y-2">
-                                    <div className="text-xs font-medium text-[#605a57] uppercase tracking-wide mb-3">
-                                        Navigation
-                                    </div>
-                                    {[
-                                        "Home",
-                                        "Customers",
-                                        "Billing",
-                                        "Schedules",
-                                        "Invoices",
-                                        "Products",
-                                    ].map((item) => (
-                                        <div
-                                            key={item}
-                                            className={`text-sm py-1 cursor-pointer ${
-                                                item === "Schedules"
-                                                    ? "text-muted-foreground font-medium"
-                                                    : "text-muted-foreground/60 hover:text-muted-foreground/80"
-                                            }`}
-                                        >
-                                            {item}
-                                        </div>
-                                    ))}
-                                </nav>
+                    <div className="flex">
+                        {/* Sidebar */}
+                        <nav className="w-48 bg-[var(--background-muted)]/30 border-r border-ring/30 p-4 space-y-2">
+                            <div className="text-xs font-medium text-foreground/50 uppercase tracking-wide mb-3">
+                                Navigation
                             </div>
-
-                            {/* Main Content */}
-                            <div className="flex-1 p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-semibold text-muted-foreground">
-                                        Schedules
-                                    </h2>
-                                    <Button
-                                        onClick={() => setShowForm(!showForm)}
-                                        className="bg-muted-foreground hover:bg-muted-foreground/90 text-white text-sm"
-                                    >
-                                        {showForm
-                                            ? "View schedules"
-                                            : "Create schedule"}
-                                    </Button>
+                            {["Current", "Plan"].map((item) => (
+                                <div
+                                    key={item}
+                                    className={`text-sm py-1 cursor-pointer ${
+                                        item === "Current"
+                                            ? "text-muted-foreground font-medium"
+                                            : "text-muted-foreground/70 hover:text-muted-foreground/80"
+                                    }`}
+                                >
+                                    {item}
                                 </div>
+                            ))}
+                        </nav>
 
-                                {/* Form View */}
-                                {showForm ? (
-                                    <div className="bg-white border border-ring/30 rounded-lg p-6">
-                                        <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-                                            Add New Class
-                                        </h3>
+                        {/* Main Content */}
+                        <div className="flex-1 p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-semibold text-muted-foreground">
+                                    Schedules
+                                </h2>
+
+                                {/* Dialog Trigger Button */}
+                                <Dialog.Dialog
+                                    open={showForm}
+                                    onOpenChange={setShowForm}
+                                >
+                                    <Dialog.DialogTrigger asChild>
+                                        <Button className="bg-muted-foreground hover:bg-muted-foreground/90 text-white text-sm">
+                                            Create schedule
+                                        </Button>
+                                    </Dialog.DialogTrigger>
+                                    <Dialog.DialogContent className="sm:max-w-[600px] bg-white">
+                                        <Dialog.DialogHeader>
+                                            <Dialog.DialogTitle>
+                                                Add New Class
+                                            </Dialog.DialogTitle>
+                                            <Dialog.DialogDescription>
+                                                Enter the details for your new
+                                                class schedule.
+                                            </Dialog.DialogDescription>
+                                        </Dialog.DialogHeader>
+
                                         <form
                                             onSubmit={handleSubmit}
-                                            className="space-y-4"
+                                            className="space-y-4 mt-4"
                                         >
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div>
@@ -291,7 +292,7 @@ export default function SchedulerPage() {
                                                 <label className="block text-sm font-medium text-muted-foreground mb-2">
                                                     Days
                                                 </label>
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-2 flex-wrap">
                                                     {[
                                                         "Mon",
                                                         "Tue",
@@ -307,12 +308,12 @@ export default function SchedulerPage() {
                                                             onClick={() =>
                                                                 toggleDay(day)
                                                             }
-                                                            className={`px-3 py-1 rounded-md text-sm ${
+                                                            className={`px-3 py-1 rounded-md text-sm transition-colors ${
                                                                 formData.days.includes(
                                                                     day
                                                                 )
                                                                     ? "bg-muted-foreground text-white"
-                                                                    : "bg-[#fbfaf9] border border-ring/30 text-muted-foreground"
+                                                                    : "bg-background border border-ring/30 text-muted-foreground hover:bg-muted/20"
                                                             }`}
                                                         >
                                                             {day}
@@ -366,99 +367,157 @@ export default function SchedulerPage() {
                                                 </div>
                                             </div>
 
-                                            <div className="flex gap-3 pt-2">
+                                            <Dialog.DialogFooter>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() =>
+                                                        setShowForm(false)
+                                                    }
+                                                >
+                                                    Cancel
+                                                </Button>
                                                 <Button
                                                     type="submit"
                                                     className="bg-muted-foreground hover:bg-muted-foreground/90 text-white"
                                                 >
                                                     Add Class
                                                 </Button>
-                                                <Button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setShowForm(false)
-                                                    }
-                                                    className="bg-white border border-ring/30 text-muted-foreground hover:bg-[#fbfaf9]"
-                                                >
-                                                    Cancel
-                                                </Button>
-                                            </div>
+                                            </Dialog.DialogFooter>
                                         </form>
-                                    </div>
-                                ) : (
-                                    // Table View
-                                    <div className="bg-white border border-ring/30 rounded-lg overflow-hidden">
-                                        <div className="grid grid-cols-7 gap-4 p-4 bg-[#fbfaf9] border-b border-ring/30 text-sm font-medium text-[#605a57]">
-                                            <div>Class</div>
-                                            <div>Section</div>
-                                            <div>Professor</div>
-                                            <div>Time</div>
-                                            <div>Location</div>
-                                            <div>Days</div>
-                                            <div>Duration</div>
-                                        </div>
+                                    </Dialog.DialogContent>
+                                </Dialog.Dialog>
+                            </div>
 
-                                        {/* Table Rows */}
-                                        {classes.map((classInfo, i) => (
-                                            <div
-                                                key={classInfo.id}
-                                                className="grid grid-cols-7 gap-4 p-4 border-b border-ring/30 text-sm"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 bg-muted-foreground rounded-full flex items-center justify-center text-white text-xs">
-                                                        {classInfo.className.charAt(
-                                                            0
-                                                        )}
+                            {/* Shadcn Table View */}
+                            <div className="bg-white border border-ring/30 rounded-lg overflow-hidden">
+                                <Table.Table>
+                                    <Table.TableHeader>
+                                        <Table.TableRow className="bg-background hover:bg-background">
+                                            <Table.TableHead>
+                                                Class
+                                            </Table.TableHead>
+                                            <Table.TableHead>
+                                                Section
+                                            </Table.TableHead>
+                                            <Table.TableHead>
+                                                Professor
+                                            </Table.TableHead>
+                                            <Table.TableHead>
+                                                Time
+                                            </Table.TableHead>
+                                            <Table.TableHead>
+                                                Location
+                                            </Table.TableHead>
+                                            <Table.TableHead>
+                                                Days
+                                            </Table.TableHead>
+                                            <Table.TableHead>
+                                                Duration
+                                            </Table.TableHead>
+                                        </Table.TableRow>
+                                    </Table.TableHeader>
+                                    <Table.TableBody>
+                                        {classes.map((classInfo) => (
+                                            <Table.TableRow key={classInfo.id}>
+                                                <Table.TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 bg-muted-foreground rounded-full flex items-center justify-center text-white text-xs">
+                                                            {classInfo.className.charAt(
+                                                                0
+                                                            )}
+                                                        </div>
+                                                        <span className="text-muted-foreground font-medium">
+                                                            {
+                                                                classInfo.className
+                                                            }
+                                                        </span>
                                                     </div>
-                                                    <span className="text-muted-foreground font-medium">
-                                                        {classInfo.className}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center">
+                                                </Table.TableCell>
+                                                <Table.TableCell>
                                                     <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">
                                                         {classInfo.section}
                                                     </span>
-                                                </div>
-                                                <div className="text-[#605a57] flex items-center">
+                                                </Table.TableCell>
+                                                <Table.TableCell className="text-foreground/50">
                                                     {classInfo.professor}
-                                                </div>
-                                                <div className="text-[#605a57] flex items-center">
+                                                </Table.TableCell>
+                                                <Table.TableCell className="text-foreground/50">
                                                     {classInfo.time}
-                                                </div>
-                                                <div className="text-[#605a57] flex items-center">
+                                                </Table.TableCell>
+                                                <Table.TableCell className="text-foreground/50">
                                                     {classInfo.location}
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    {classInfo.days.map(
-                                                        (day) => (
-                                                            <span
-                                                                key={day}
-                                                                className="text-xs text-muted-foreground font-medium"
-                                                            >
-                                                                {day}
-                                                            </span>
-                                                        )
-                                                    )}
-                                                </div>
-                                                <div className="text-[#605a57] flex items-center text-xs">
+                                                </Table.TableCell>
+                                                <Table.TableCell>
+                                                    <div className="flex items-center gap-1 flex-wrap">
+                                                        {classInfo.days.map(
+                                                            (day) => (
+                                                                <span
+                                                                    key={day}
+                                                                    className="text-xs text-muted-foreground font-medium"
+                                                                >
+                                                                    {day}
+                                                                </span>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </Table.TableCell>
+                                                <Table.TableCell className="text-foreground/50 text-xs">
                                                     {classInfo.startDate} -{" "}
                                                     {classInfo.endDate}
-                                                </div>
-                                            </div>
+                                                </Table.TableCell>
+                                            </Table.TableRow>
                                         ))}
-                                    </div>
-                                )}
+                                    </Table.TableBody>
+                                </Table.Table>
+                            </div>
 
-                                {/* Timetable View Section */}
-                                {!showForm && classes.length > 0 && (
-                                    <div className="mt-8">
-                                        <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-                                            Weekly Timetable
-                                        </h3>
-                                        <div className="bg-white border border-ring/30 rounded-lg overflow-hidden">
-                                            <div className="grid grid-cols-8 border-b border-ring/30">
-                                                <div className="p-3 bg-[#fbfaf9] border-r border-ring/30 text-sm font-medium text-[#605a57]">
-                                                    Time
+                            {classes.length > 0 && (
+                                <div className="mt-8">
+                                    <h3 className="text-lg font-semibold text-muted-foreground mb-4">
+                                        Weekly Timetable
+                                    </h3>
+                                    <div className="bg-white border border-ring/30 rounded-lg overflow-hidden">
+                                        <div className="grid grid-cols-[2fr_3fr_3fr_3fr_3fr_3fr_1fr_1fr] border-b border-ring/30">
+                                            <div className="p-2 bg-background border-r border-ring/30 text-sm text-foreground/50">
+                                                Time
+                                            </div>
+                                            {[
+                                                "Mon",
+                                                "Tue",
+                                                "Wed",
+                                                "Thu",
+                                                "Fri",
+                                                "Sat",
+                                                "Sun",
+                                            ].map((day) => (
+                                                <div
+                                                    key={day}
+                                                    className="p-2 bg-background border-r last:border-r-0 border-ring/30 text-sm text-foreground/50 text-center"
+                                                >
+                                                    {day}
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Time slots */}
+                                        {[
+                                            "8:00 AM",
+                                            "9:00 AM",
+                                            "10:00 AM",
+                                            "11:00 AM",
+                                            "12:00 PM",
+                                            "1:00 PM",
+                                            "2:00 PM",
+                                            "3:00 PM",
+                                            "4:00 PM",
+                                        ].map((time) => (
+                                            <div
+                                                key={time}
+                                                className="grid grid-cols-[2fr_3fr_3fr_3fr_3fr_3fr_1fr_1fr] border-b last:border-b-0 border-ring/30"
+                                            >
+                                                <div className="p-2 border-r border-ring/30 text-sm text-foreground/50">
+                                                    {time}
                                                 </div>
                                                 {[
                                                     "Mon",
@@ -468,74 +527,38 @@ export default function SchedulerPage() {
                                                     "Fri",
                                                     "Sat",
                                                     "Sun",
-                                                ].map((day) => (
-                                                    <div
-                                                        key={day}
-                                                        className="p-3 bg-[#fbfaf9] border-r last:border-r-0 border-ring/30 text-sm font-medium text-[#605a57] text-center"
-                                                    >
-                                                        {day}
-                                                    </div>
-                                                ))}
-                                            </div>
-
-                                            {/* Time slots */}
-                                            {[
-                                                "8:00 AM",
-                                                "10:00 AM",
-                                                "12:00 PM",
-                                                "2:00 PM",
-                                                "4:00 PM",
-                                            ].map((time) => (
-                                                <div
-                                                    key={time}
-                                                    className="grid grid-cols-8 border-b last:border-b-0 border-ring/30"
-                                                >
-                                                    <div className="p-3 border-r border-ring/30 text-sm text-[#605a57] font-medium">
-                                                        {time}
-                                                    </div>
-                                                    {[
-                                                        "Mon",
-                                                        "Tue",
-                                                        "Wed",
-                                                        "Thu",
-                                                        "Fri",
-                                                        "Sat",
-                                                        "Sun",
-                                                    ].map((day) => {
-                                                        const classForSlot =
-                                                            classes.find((c) =>
-                                                                c.days.includes(
-                                                                    day
-                                                                )
-                                                            );
-                                                        return (
-                                                            <div
-                                                                key={day}
-                                                                className="p-3 border-r last:border-r-0 border-ring/30 min-h-[60px]"
-                                                            >
-                                                                {classForSlot && (
-                                                                    <div className="bg-muted-foreground/10 border border-muted-foreground/20 rounded p-2">
-                                                                        <div className="text-xs font-medium text-muted-foreground">
-                                                                            {
-                                                                                classForSlot.className
-                                                                            }
-                                                                        </div>
-                                                                        <div className="text-xs text-[#605a57] mt-1">
-                                                                            {
-                                                                                classForSlot.location
-                                                                            }
-                                                                        </div>
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                                ].map((day) => {
+                                                    const classForSlot =
+                                                        classes.find((c) =>
+                                                            c.days.includes(day)
                                                         );
-                                                    })}
-                                                </div>
-                                            ))}
-                                        </div>
+                                                    return (
+                                                        <div
+                                                            key={day}
+                                                            className="border-r last:border-r-0 border-ring/30"
+                                                        >
+                                                            {classForSlot && (
+                                                                <div className="bg-muted-foreground/5s p-2">
+                                                                    <div className="text-xs font-medium text-muted-foreground">
+                                                                        {
+                                                                            classForSlot.className
+                                                                        }
+                                                                    </div>
+                                                                    <div className="text-xs text-foreground/50 mt-1">
+                                                                        {
+                                                                            classForSlot.location
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ))}
                                     </div>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
