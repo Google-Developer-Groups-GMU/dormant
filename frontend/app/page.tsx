@@ -1,12 +1,12 @@
 "use client";
 
-import { Header } from "@/components/header";
 import type React from "react";
+import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 
 import gdg_logo from "@/public/logo.png";
 
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
+import { Header } from "@/components/header";
 
 export default function LandingPage() {
     const [activeCard, setActiveCard] = useState(0);
@@ -47,7 +47,7 @@ export default function LandingPage() {
                 <div className="w-[1px] h-full absolute left-4 sm:left-6 md:left-8 lg:left-0 top-0 bg-ring shadow-[1px_0px_0px_white] z-0"></div>
                 <div className="w-[1px] h-full absolute right-4 sm:right-6 md:right-8 lg:right-0 top-0 bg-ring shadow-[1px_0px_0px_white] z-0"></div>
 
-                <div className="self-stretch mb-12 overflow-hidden border-b border-ring flex flex-col justify-center items-center gap-4 sm:gap-6 md:gap-8 relative z-10">
+                <div className="self-stretch mb-12 overflow-hidden flex flex-col justify-center items-center gap-4 sm:gap-6 md:gap-8 relative z-10">
                     <Header />
                     <div className="pt-16 sm:pt-20 md:pt-24 lg:pt-56 pb-8 sm:pb-12 md:pb-24 flex flex-col justify-start items-center px-2 sm:px-4 md:px-8 lg:px-0 w-full sm:pl-0 sm:pr-0 pl-0 pr-0">
                         <div className="w-full max-w-3xl text-center flex justify-center flex-col text-muted-foreground text-[24px] xs:text-[28px] sm:text-[36px] md:text-[52px] lg:text-[72px] font-normal leading-[1.2] font-serif px-2 sm:px-4 md:px-0">
@@ -71,7 +71,13 @@ export default function LandingPage() {
                             resolution; all in one platform.
                         </div>
 
-                        <div className="my-12 flex items-center justify-center text-muted-foreground text-sm sm:text-base font-sans font-medium border-2 border-muted-foreground px-6 py-1 rounded-full">
+                        <div
+                            className="my-12 flex items-center justify-center text-muted-foreground text-sm sm:text-base font-sans font-medium border border-muted-foreground/10 px-6 py-1 rounded-full inset-shadow-sm hover:cursor-pointer hover:bg-muted/80"
+                            onClick={() => {
+                                window.location.href =
+                                    "http://localhost:5000/auth/google/login";
+                            }}
+                        >
                             Start for free with{" "}
                             <svg
                                 version="1.1"
@@ -144,6 +150,10 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </div>
+                <footer className="self-stretch w-full h-12 border-t border-ring flex justify-center items-center text-muted-foreground text-xs font-serif">
+                    © 2025 dormant. Google Developer Groups@GMU. All rights
+                    reserved.
+                </footer>
             </div>
         </div>
     );
