@@ -101,7 +101,7 @@ export default function SchedulerPage() {
     } else {
         return (
             <div className="min-h-screen bg-background pt-4">
-                <div className="relative bg-white rounded-lg shadow-lg border border-ring/30 overflow-hidden mx-4">
+                <div className="relative bg-white rounded-lg shadow-md border border-ring/30 overflow-hidden mx-4">
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 border-b border-ring/30">
                         <div
@@ -153,9 +153,9 @@ export default function SchedulerPage() {
 
                         {/* Main Content */}
                         <div className="flex-1 p-6">
-                            <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center justify-between mb-3">
                                 <h2 className="text-xl font-semibold text-muted-foreground">
-                                    Schedules
+                                    Classes
                                 </h2>
 
                                 {/* Dialog Trigger Button */}
@@ -165,7 +165,7 @@ export default function SchedulerPage() {
                                 >
                                     <Dialog.DialogTrigger asChild>
                                         <Button className="bg-muted-foreground hover:bg-muted-foreground/90 text-white text-sm">
-                                            Create schedule
+                                            Add Class
                                         </Button>
                                     </Dialog.DialogTrigger>
                                     <Dialog.DialogContent className="sm:max-w-[600px] bg-white">
@@ -473,14 +473,47 @@ export default function SchedulerPage() {
                             </div>
 
                             {classes.length > 0 && (
-                                <div className="mt-8">
-                                    <h3 className="text-lg font-semibold text-muted-foreground mb-4">
-                                        Weekly Timetable
-                                    </h3>
-                                    <div className="bg-white border border-ring/30 rounded-lg overflow-hidden">
-                                        <div className="grid grid-cols-[2fr_3fr_3fr_3fr_3fr_3fr_1fr_1fr] border-b border-ring/30">
-                                            <div className="p-2 bg-background border-r border-ring/30 text-sm text-foreground/50">
-                                                Time
+                                <div className="bg-white border border-ring/30 rounded-lg overflow-hidden mt-3">
+                                    <div className="grid grid-cols-[2fr_3fr_3fr_3fr_3fr_3fr_1fr_1fr] border-b border-ring/30">
+                                        <div className="p-2 bg-background border-r border-ring/30 text-sm text-foreground/50">
+                                            Time
+                                        </div>
+                                        {[
+                                            "Mon",
+                                            "Tue",
+                                            "Wed",
+                                            "Thu",
+                                            "Fri",
+                                            "Sat",
+                                            "Sun",
+                                        ].map((day) => (
+                                            <div
+                                                key={day}
+                                                className="p-2 bg-background border-r last:border-r-0 border-ring/30 text-sm text-foreground/50 text-center"
+                                            >
+                                                {day}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Time slots */}
+                                    {[
+                                        "8:00 AM",
+                                        "9:00 AM",
+                                        "10:00 AM",
+                                        "11:00 AM",
+                                        "12:00 PM",
+                                        "1:00 PM",
+                                        "2:00 PM",
+                                        "3:00 PM",
+                                        "4:00 PM",
+                                    ].map((time) => (
+                                        <div
+                                            key={time}
+                                            className="grid grid-cols-[2fr_3fr_3fr_3fr_3fr_3fr_1fr_1fr] border-b last:border-b-0 border-ring/30"
+                                        >
+                                            <div className="p-2 border-r border-ring/30 text-sm text-foreground/50">
+                                                {time}
                                             </div>
                                             {[
                                                 "Mon",
@@ -490,73 +523,35 @@ export default function SchedulerPage() {
                                                 "Fri",
                                                 "Sat",
                                                 "Sun",
-                                            ].map((day) => (
-                                                <div
-                                                    key={day}
-                                                    className="p-2 bg-background border-r last:border-r-0 border-ring/30 text-sm text-foreground/50 text-center"
-                                                >
-                                                    {day}
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Time slots */}
-                                        {[
-                                            "8:00 AM",
-                                            "9:00 AM",
-                                            "10:00 AM",
-                                            "11:00 AM",
-                                            "12:00 PM",
-                                            "1:00 PM",
-                                            "2:00 PM",
-                                            "3:00 PM",
-                                            "4:00 PM",
-                                        ].map((time) => (
-                                            <div
-                                                key={time}
-                                                className="grid grid-cols-[2fr_3fr_3fr_3fr_3fr_3fr_1fr_1fr] border-b last:border-b-0 border-ring/30"
-                                            >
-                                                <div className="p-2 border-r border-ring/30 text-sm text-foreground/50">
-                                                    {time}
-                                                </div>
-                                                {[
-                                                    "Mon",
-                                                    "Tue",
-                                                    "Wed",
-                                                    "Thu",
-                                                    "Fri",
-                                                    "Sat",
-                                                    "Sun",
-                                                ].map((day) => {
-                                                    const classForSlot =
-                                                        classes.find((c) =>
-                                                            c.days.includes(day)
-                                                        );
-                                                    return (
-                                                        <div
-                                                            key={day}
-                                                            className="border-r last:border-r-0 border-ring/30"
-                                                        >
-                                                            {classForSlot && (
-                                                                <div className="bg-muted-foreground/5s p-2">
-                                                                    <div className="text-xs font-medium text-muted-foreground">
-                                                                        {
-                                                                            classForSlot.className
-                                                                        }
-                                                                    </div>
-                                                                    <div className="text-xs text-foreground/50 mt-1">
-                                                                        {
-                                                                            classForSlot.location
-                                                                        }
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
+                                            ].map((day) => {
+                                                const classForSlot =
+                                                    classes.find((c) =>
+                                                        c.days.includes(day)
                                                     );
-                                                })}
-                                            </div>
-                                        ))}
-                                    </div>
+                                                return (
+                                                    <div
+                                                        key={day}
+                                                        className="border-r last:border-r-0 border-ring/30"
+                                                    >
+                                                        {classForSlot && (
+                                                            <div className="bg-muted-foreground/5 p-2">
+                                                                <div className="text-xs font-medium text-muted-foreground">
+                                                                    {
+                                                                        classForSlot.className
+                                                                    }
+                                                                </div>
+                                                                <div className="text-xs text-foreground/50 mt-1">
+                                                                    {
+                                                                        classForSlot.location
+                                                                    }
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
