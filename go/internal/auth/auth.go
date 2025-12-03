@@ -1,19 +1,15 @@
 package auth
 
-/*
-authentication using the Goth library with Google as the provider
+// authentication using the Goth library with Google as the provider
 
-why Gin as framework not Gorilla Mux or Chi?
-Gin is faster, simper to use. built in middleware, documentation is better.
-it uses its own context which makes it easier to pass data around. Much much easier.
-we are locking our project ecosystem to gin anyways, so it makes sense to use gin here as well.
-
-
-*/
+// why Gin as framework not Gorilla Mux or Chi?
+// Gin is faster, simpler to use with built in middleware, documentation is better
+// it uses its own context which makes it easier to pass data around; much much easier.
+// we are locking our project ecosystem to gin anyways, so it makes sense to use gin here as well.
 
 import (
 	"context"
-	"encoding/gob" // Add this
+	"encoding/gob"
 	"log"
 	"net/http"
 	"os"
@@ -24,10 +20,10 @@ import (
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/google"
-)
 
-// custom type for context keys to avoid collisions
-type contextKey string
+	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/firestore"
+	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/types"
+)
 
 // constants for session management and context keys
 const (
@@ -36,7 +32,6 @@ const (
 	Path     string = "/"
 	HttpOnly bool   = true
 	Secure   bool   = false
-	isDev    bool   = true
 )
 
 func init() {
@@ -95,12 +90,19 @@ func CallbackHandler(c *gin.Context) {
 		return
 	}
 
+	// save user to Firestore
+	firestore.SaveUserToFirestore(c.Request.Context(), types.User{
+		ID:        user.UserID,
+		Name:      user.Name,
+		Email:     user.Email,
+		AvatarURL: user.AvatarURL,
+	})
+
 	// get/create session for the user
 	session, _ := gothic.Store.Get(c.Request, "user-session")
 
-	// store user data in the session
-	// TODO: just store user.UserID and look up the rest from DB
-	session.Values["user"] = user
+	// store ONLY the user ID in the session
+	session.Values["user_id"] = user.UserID
 
 	// save the session/writes cookie
 	err = session.Save(c.Request, c.Writer)
@@ -109,7 +111,7 @@ func CallbackHandler(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/")
+	c.Redirect(http.StatusTemporaryRedirect, os.Getenv("FRONTEND_URL"))
 }
 
 // signout handler
@@ -134,7 +136,7 @@ func SignOutHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "signed out"})
 }
 
-// get user profile, limited to necessary fields only
+// get user profile, fetching data from firestore
 func GetUserProfile(c *gin.Context) {
 	session, err := gothic.Store.Get(c.Request, "user-session")
 	if err != nil {
@@ -142,28 +144,37 @@ func GetUserProfile(c *gin.Context) {
 		return
 	}
 
-	val := session.Values["user"]
+	val := session.Values["user_id"]
 	if val == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "not logged in"})
 		return
 	}
 
-	user, ok := val.(goth.User)
+	userID, ok := val.(string)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid session data"})
 		return
 	}
 
+	// fetch user data from firestore
+	user, err := firestore.GetUser(c.Request.Context(), userID)
+	if err != nil {
+		log.Printf("Failed to fetch user from Firestore: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user profile"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"UserID":    user.UserID,
+		"UserID":    user.ID,
 		"Name":      user.Name,
 		"Email":     user.Email,
 		"AvatarURL": user.AvatarURL,
 	})
 }
 
-// dev
-//
+// // // // // // // //
+// devdevdevdevdevde //
+// // // // // // // //
 // get user state, not used; for dev purposes only
 func GetUser(c *gin.Context) {
 	session, _ := gothic.Store.Get(c.Request, "user-session")

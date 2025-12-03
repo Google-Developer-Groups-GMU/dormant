@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/api"
 	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/auth"
+	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/firestore"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -17,6 +19,12 @@ func main() {
 	if err != nil {
 		log.Fatal(".env file failed to load")
 	}
+
+	// init firestore client
+	if err := firestore.Init(); err != nil {
+		log.Printf("Failed to initialize Firestore: %v", err)
+	}
+	defer firestore.Close()
 
 	// initialize Gin router
 	r := gin.Default()
@@ -46,6 +54,9 @@ func main() {
 	r.GET("/auth/:provider/callback", auth.CallbackHandler)
 	r.GET("/auth/signout", auth.SignOutHandler)
 	r.GET("/auth/profile", auth.GetUserProfile)
+
+	// generator route
+	r.POST("/api/generate", api.GenerateSchedule)
 
 	r.Run(":5000")
 }
