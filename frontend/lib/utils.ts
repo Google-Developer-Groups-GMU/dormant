@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BACKEND_URL } from "@/lib/constants";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -22,7 +23,7 @@ export function useAuth() {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await fetch("http://localhost:5000/auth/profile", {
+                const res = await fetch(`${BACKEND_URL}/auth/profile`, {
                     method: "GET",
                     credentials: "include",
                 });
@@ -47,7 +48,7 @@ export function useAuth() {
     const handleSignOut = async () => {
         try {
             // clear cookie
-            await fetch("http://localhost:5000/auth/signout", {
+            await fetch(`${BACKEND_URL}/auth/signout`, {
                 method: "GET",
                 credentials: "include",
             });

@@ -1,5 +1,8 @@
 package api
 
+// handlers for API routes
+// schedule generation, saving schedules, etc.
+
 import (
 	"net/http"
 
@@ -7,9 +10,6 @@ import (
 	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/types"
 	"github.com/gin-gonic/gin"
 )
-
-// we are not implementing usual CRUD for schedules since they are
-// generated on the fly and saved as needed.
 
 // POST /api/generate
 // input: { "courseIds": ["CS101", "MATH200"] }

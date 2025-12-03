@@ -33,21 +33,9 @@ type Meeting struct {
 	Location  string `json:"location"` // meeting location
 }
 
-type User struct {
-	ID        string `json:"id" firestore:"id"`
-	Name      string `json:"name" firestore:"name"`
-	Email     string `json:"email" firestore:"email"`
-	AvatarURL string `json:"avatar_url" firestore:"avatar_url"`
-}
-
 type Schedule struct {
 	ID       string    `json:"id"`
 	UserID   string    `json:"user_id"`
 	Name     string    `json:"name"`
 	Sections []Section `json:"sections"`
-}
-
-type GenerateRequest struct {
-	UserID    string   `json:"user_id"`
-	CourseIDs []string `json:"course_ids"` // ["CS110", "MATH200"]
 }

@@ -1,5 +1,20 @@
 package scheduler
 
+// resourc heavy computation module
+// backtracking algorithm to generate valid class schedules
+// given selected courses and their sections
+
+// this will be worked on with GDG members during winter
+// im trying as hard as i can do manage life + work :(
+
+// mental health is very important yall
+// please take care of yourselves
+// it seems like you wont make it through this time
+// but you know you will
+// i am going through it too
+// we will make it through this together
+// :)
+
 import (
 	"context"
 	"fmt"

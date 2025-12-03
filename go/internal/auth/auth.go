@@ -2,10 +2,17 @@ package auth
 
 // authentication using the Goth library with Google as the provider
 
-// why Gin as framework not Gorilla Mux or Chi?
+// NOTE: why Gin as framework not Gorilla Mux or Chi?
 // Gin is faster, simpler to use with built in middleware, documentation is better
 // it uses its own context which makes it easier to pass data around; much much easier.
 // we are locking our project ecosystem to gin anyways, so it makes sense to use gin here as well.
+
+// we are committing to using goth/gothic for auth as well, because it supports multiple providers
+// just in case we want to add more providers in the future
+// it makes it a little more complex, but more flexible
+
+// we are forced to commit to using gothic's session management as well
+// which means we have to implement CRUD server side instead of client side fetch/writes
 
 import (
 	"context"
@@ -31,7 +38,7 @@ const (
 	MaxAge   int    = 86400 * 30
 	Path     string = "/"
 	HttpOnly bool   = true
-	Secure   bool   = false
+	Secure   bool   = false // set to true in production with HTTPS
 )
 
 func init() {
@@ -159,8 +166,13 @@ func GetUserProfile(c *gin.Context) {
 	// fetch user data from firestore
 	user, err := firestore.GetUser(c.Request.Context(), userID)
 	if err != nil {
-		log.Printf("Failed to fetch user from Firestore: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user profile"})
+		log.Printf("Firestore error: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch user data"})
+		return
+	}
+
+	if user == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "User profile unavailable (DB not connected)"})
 		return
 	}
 
