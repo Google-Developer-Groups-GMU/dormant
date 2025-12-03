@@ -2,6 +2,11 @@ package api
 
 // handlers for API routes
 // schedule generation, saving schedules, etc.
+// this is about dealing with ALREADY GENERATED schedules
+// (user should be able to have multiple saved possible schedules)
+// (like plan A, plan B, ...)
+// not generating schedules from scratch
+// that is done in the scheduler module
 
 import (
 	"net/http"
@@ -40,4 +45,28 @@ func GenerateSchedule(c *gin.Context) {
 
 	// return results immediately so frontend can display them
 	c.JSON(http.StatusOK, generatedSchedules)
+}
+
+// save schedule
+func SaveSchedule(c *gin.Context) {
+	// TODO: implement saving schedule to Firestore
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
+}
+
+// get saved schedules
+func GetSavedSchedules(c *gin.Context) {
+	// TODO: implement fetching saved schedules from Firestore
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
+}
+
+// delete saved schedule
+func DeleteSavedSchedule(c *gin.Context) {
+	// TODO: implement deleting saved schedule from Firestore
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
+}
+
+// update saved schedule
+func UpdateSavedSchedule(c *gin.Context) {
+	// TODO: implement updating saved schedule in Firestore
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
 }

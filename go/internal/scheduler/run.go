@@ -4,6 +4,9 @@ package scheduler
 // backtracking algorithm to generate valid class schedules
 // given selected courses and their sections
 
+// this is where we generate schedules from scratch
+// and feed it to user so they can pick and choose
+
 // this will be worked on with GDG members during winter
 // im trying as hard as i can do manage life + work :(
 
@@ -45,7 +48,7 @@ func Run(ctx context.Context, courseIDs []string, userID string) ([]types.Schedu
 	return generatedSchedules, nil
 }
 
-// fetches detailed meeting times (Mon/Wed 10am) which the frontend will not have
+// fetches detailed meeting times (Mon/Wed 10am)
 // crucial for generating permutations and checking conflicts
 func GetSectionsByCourseIDs(ctx context.Context, courseIDs []string) ([]types.Section, error) {
 	// TODO: connect this to your actual firestore
