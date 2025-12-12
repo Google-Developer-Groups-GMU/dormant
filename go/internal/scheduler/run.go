@@ -14,7 +14,6 @@ package scheduler
 // please take care of yourselves
 // it seems like you wont make it through this time
 // but you know you will
-// i am going through it too
 // we will make it through this together
 // :)
 
