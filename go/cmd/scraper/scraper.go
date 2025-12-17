@@ -118,8 +118,8 @@ func main() {
 	// use this to get all subjects in prod
 	// subjects, err := GetSubjects(client, token)
 
-	// in local we are only testing CS
-	var subjects = []string{"CS"}
+	// in local we are only testing CS and MATH
+	var subjects = []string{"CS", "MATH"}
 	fmt.Printf("== 3 == fetching classes for %s...\n", subjects)
 
 	// for concurrency
@@ -131,6 +131,11 @@ func main() {
 	seenCourses := make(map[string]bool)
 
 	for _, subj := range subjects {
+		// banner api is stateful. which means we need to reset the search
+		// every time we change the subject
+		// otherwise it will keep appending to the previous search
+		resetSearch(client, token)
+
 		offset := 0
 		maxSize := 50
 
@@ -238,6 +243,21 @@ func main() {
 	fmt.Println("== DONE == all subjects processed.")
 }
 
+// clears the search criteria in the session
+func resetSearch(client *http.Client, token string) {
+	resetURL := fmt.Sprintf("%s/ssb/classSearch/resetDataForm", BaseURL)
+	req, _ := http.NewRequest("POST", resetURL, nil)
+	setHeaders(req, token)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Warning: Failed to reset search: %v", err)
+	} else {
+		resp.Body.Close()
+	}
+}
+
 // set the headers
 func setHeaders(req *http.Request, token string) {
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
@@ -247,6 +267,30 @@ func setHeaders(req *http.Request, token string) {
 	if token != "" {
 		req.Header.Set("X-Synchronizer-Token", token)
 	}
+}
+
+// parsing time: 1330 -> 13 + 30
+// return 0 if nil or invalid
+func parseTimeStr(t *string) int {
+	if t == nil {
+		return 0
+	}
+	val := *t
+	if len(val) < 4 {
+		return 0
+	}
+	// "1330" -> 13, 30
+	hh, _ := strconv.Atoi(val[:2])
+	mm, _ := strconv.Atoi(val[2:])
+	return (hh * 60) + mm
+}
+
+// safely dereference string pointer
+func getStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }
 
 // parse into section type
@@ -300,30 +344,6 @@ func parseBannerSection(raw types.BannerSection) types.Section {
 		}
 	}
 	return sec
-}
-
-// parsing time: 1330 -> 13 + 30
-// return 0 if nil or invalid
-func parseTimeStr(t *string) int {
-	if t == nil {
-		return 0
-	}
-	val := *t
-	if len(val) < 4 {
-		return 0
-	}
-	// "1330" -> 13, 30
-	hh, _ := strconv.Atoi(val[:2])
-	mm, _ := strconv.Atoi(val[2:])
-	return (hh * 60) + mm
-}
-
-// safely dereference string pointer
-func getStr(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
 }
 
 // fetch all subjects from banner
