@@ -2,6 +2,7 @@ package firestore
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"cloud.google.com/go/firestore"
@@ -56,4 +57,57 @@ func SaveSection(ctx context.Context, section types.Section) error {
 	}
 
 	return nil
+}
+
+// fetch all sections for a specific course ID
+// "CS110" for example
+// uses the "section_ids" index.
+func GetSectionsForCourse(ctx context.Context, courseID string) ([]types.Section, error) {
+	// fetch the course document first
+	dsnap, err := Client.Collection("courses").Doc(courseID).Get(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find course %s: %v", courseID, err)
+	}
+
+	var course types.Course
+	if err := dsnap.DataTo(&course); err != nil {
+		return nil, fmt.Errorf("failed to parse course data: %v", err)
+	}
+
+	// check if there are any sections linked
+	if len(course.SectionIDs) == 0 {
+		return []types.Section{}, nil
+	}
+
+	// batch fetch the sections
+	// instead of searching "WHERE course_id == CS110", ask for the specific IDs
+	// to avoid scanning the entire sections collection
+	// efficient for courses with many sections like mentioned at the top
+	docRefs := make([]*firestore.DocumentRef, len(course.SectionIDs))
+	for i, secID := range course.SectionIDs {
+		docRefs[i] = Client.Collection("sections").Doc(secID)
+	}
+
+	// getall retrieves multiple documents in a single network round-trip
+	// more efficient than querying one by one
+	sectionSnaps, err := Client.GetAll(ctx, docRefs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch sections: %v", err)
+	}
+
+	// unmarshal results
+	var sections []types.Section
+	for _, snap := range sectionSnaps {
+		// verify the doc exists
+		// in case a section was deleted but ID remains
+		if !snap.Exists() {
+			continue
+		}
+		var s types.Section
+		if err := snap.DataTo(&s); err == nil {
+			sections = append(sections, s)
+		}
+	}
+
+	return sections, nil
 }

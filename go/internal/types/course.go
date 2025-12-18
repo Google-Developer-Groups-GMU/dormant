@@ -7,6 +7,9 @@ type Course struct {
 	Title       string `json:"title" firestore:"title"`           // "Intro to CS"
 	Description string `json:"description" firestore:"description"`
 	Credits     int    `json:"credits" firestore:"credits"` // 3
+
+	// list of section IDs for this course
+	SectionIDs []string `json:"section_ids" firestore:"section_ids"`
 }
 
 type Section struct {

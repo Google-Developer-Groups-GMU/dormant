@@ -131,7 +131,7 @@ func main() {
 	seenCourses := make(map[string]bool)
 
 	for _, subj := range subjects {
-		// banner api is stateful. which means we need to reset the search
+		// NOTE: banner api is stateful. which means we need to reset the search
 		// every time we change the subject
 		// otherwise it will keep appending to the previous search
 		resetSearch(client, token)
@@ -178,6 +178,19 @@ func main() {
 
 			// process and save
 			for _, rawSec := range response.Data {
+
+				// NOTE: we save course and section data separately
+				// in different root collection in firestore.
+				// this is to avoid data being 1mb< and hitting firebase document limit
+				// also it allows us to use lazy loading for courses
+				// fetch courses -> fetch sections on demand
+
+				// + why not subcollection?
+				// query limitation. to use collection group queries,
+				// we cannot have subcollections:
+				// fs.Get("10492") is logically sound than fs.Get("courses/CS110/sections/10492")
+				// when we want extra search features later
+				// "give me all sections taught by prof goof" for example.
 
 				// save course info if not seen before
 				// do this synchronously to ensure we don't spam firestore with

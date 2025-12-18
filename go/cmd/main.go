@@ -58,5 +58,8 @@ func main() {
 	// generator route
 	r.POST("/api/generate", api.GenerateSchedule)
 
+	// course sections route
+	r.GET("/api/sections", api.HandleGetSections)
+
 	r.Run(":5000")
 }
