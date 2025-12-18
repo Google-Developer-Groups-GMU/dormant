@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/api"
 	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/auth"
+	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/catalog"
 	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/firestore"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -25,6 +27,14 @@ func main() {
 		log.Printf("Failed to initialize Firestore: %v", err)
 	}
 	defer firestore.Close()
+
+	// warm up course cache
+	// this is a startup task so use context.Background()
+	if err := catalog.LoadCache(context.Background(), firestore.Client); err != nil {
+		// CRITICAL: stop startup if this fails.
+		// the search feature will be broken otherwise and we can't serve requests properly.
+		log.Fatalf("Failed to warm up course cache: %v", err)
+	}
 
 	// initialize Gin router
 	r := gin.Default()
@@ -59,7 +69,12 @@ func main() {
 	r.POST("/api/generate", api.GenerateSchedule)
 
 	// course sections route
+	r.GET("/api/search", api.HandleSearchCourses)
 	r.GET("/api/sections", api.HandleGetSections)
+
+	// user schedule routes
+	r.POST("/api/user/schedule", api.SaveSchedule)
+	r.GET("/api/user/schedules", api.GetSavedSchedules)
 
 	r.Run(":5000")
 }

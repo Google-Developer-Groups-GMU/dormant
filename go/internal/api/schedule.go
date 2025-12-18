@@ -11,6 +11,7 @@ package api
 import (
 	"net/http"
 
+	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/firestore"
 	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/scheduler"
 	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/types"
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,7 @@ import (
 
 // POST /api/generate
 // input: { "courseIds": ["CS101", "MATH200"] }
+// input should be course IDs not CRN because we want to generate all possible sections
 // output: Returns the generated schedules (and saves them to DB)
 func GenerateSchedule(c *gin.Context) {
 	var req types.GenerateRequest
@@ -49,14 +51,35 @@ func GenerateSchedule(c *gin.Context) {
 
 // save schedule
 func SaveSchedule(c *gin.Context) {
-	// TODO: implement saving schedule to Firestore
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
+	// /users/{userID}/schedules
+	userID := c.Param("userID")
+
+	var schedule types.Schedule
+	if err := c.BindJSON(&schedule); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		return
+	}
+
+	err := firestore.SaveUserSchedule(c.Request.Context(), userID, schedule)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "saved", "id": schedule.ID})
 }
 
 // get saved schedules
 func GetSavedSchedules(c *gin.Context) {
-	// TODO: implement fetching saved schedules from Firestore
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
+	userID := c.Param("userID")
+
+	schedules, err := firestore.GetUserSchedules(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, schedules)
 }
 
 // delete saved schedule
