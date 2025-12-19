@@ -62,3 +62,25 @@ export function useAuth() {
 
     return { user, loading, handleSignOut };
 }
+
+export const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+// convert minutes to string
+// 600 -> "10:00 AM"
+export const formatTime = (minutes: number) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    const ampm = h >= 12 ? "PM" : "AM";
+    const h12 = h % 12 || 12;
+    return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
+};
+
+// convert string to minutes for grid logic
+// "9:00 AM" -> 540
+export const timeStringToMinutes = (timeStr: string): number => {
+    const [time, modifier] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (hours === 12) hours = 0;
+    if (modifier === "PM") hours += 12;
+    return hours * 60 + minutes;
+};

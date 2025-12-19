@@ -1,20 +1,13 @@
 import * as Dialog from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { CourseResult, Section } from "@/lib/classes";
+import { CourseResult, Schedule, Section } from "@/lib/classes";
 import { BACKEND_URL } from "@/lib/constants";
-
-const formatTime = (minutes: number) => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    const ampm = h >= 12 ? "PM" : "AM";
-    const h12 = h % 12 || 12;
-    return `${h12}:${m.toString().padStart(2, "0")} ${ampm}`;
-};
-
-const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+import { dayMap, formatTime, useAuth } from "@/lib/utils";
 
 export default function ClassList() {
+    const { user } = useAuth();
+
     // state for the users saved schedule
     const [myClasses, setMyClasses] = useState<Section[]>([]);
 
@@ -82,7 +75,7 @@ export default function ClassList() {
         };
 
         fetchSections();
-        setSelectedSection(null); // reset section selection
+        setSelectedSection(null);
     }, [selectedCourse]);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -97,6 +90,53 @@ export default function ClassList() {
         setSearchQuery("");
         setSelectedCourse(null);
         setSelectedSection(null);
+    };
+
+    const handleSaveSchedule = async () => {
+        if (myClasses.length === 0) {
+            alert("Your schedule is empty!");
+            return;
+        }
+
+        if (!user || !user.UserID) {
+            alert("You must be logged in to save a schedule.");
+            return;
+        }
+
+        setIsSaving(true);
+
+        const userID = user.UserID;
+        const payload: Schedule = {
+            id: "",
+            userId: userID,
+            name: scheduleName,
+            sections: myClasses,
+        };
+
+        try {
+            // r.POST("/users/:userID/schedules", api.SaveSchedule)
+            const res = await fetch(
+                `${BACKEND_URL}/users/${userID}/schedules`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                }
+            );
+
+            if (res.ok) {
+                const data = await res.json();
+                alert(`Success! Schedule saved.`);
+            } else {
+                const err = await res.json();
+                alert(`Error: ${err.error}`);
+            }
+        } catch (error) {
+            console.error("Save failed:", error);
+            alert("Failed to connect to server.");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -125,7 +165,6 @@ export default function ClassList() {
                             onSubmit={handleSubmit}
                             className="space-y-6 mt-4"
                         >
-                            {/* STEP 1: COURSE SEARCH */}
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-muted-foreground">
                                     1. Search Course
@@ -139,9 +178,8 @@ export default function ClassList() {
                                             setSearchQuery(e.target.value)
                                         }
                                         className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none uppercase"
-                                        disabled={!!selectedCourse} // Disable if course is locked in
+                                        disabled={!!selectedCourse}
                                     />
-                                    {/* Dropdown Results */}
                                     {searchResults.length > 0 &&
                                         !selectedCourse && (
                                             <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-40 overflow-y-auto">
@@ -155,7 +193,7 @@ export default function ClassList() {
                                                             );
                                                             setSearchQuery(
                                                                 course.id
-                                                            ); // Fill input
+                                                            );
                                                         }}
                                                         className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
                                                     >
@@ -184,7 +222,6 @@ export default function ClassList() {
                                 )}
                             </div>
 
-                            {/* STEP 2: SECTION SELECT */}
                             {selectedCourse && (
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-muted-foreground">
@@ -213,7 +250,6 @@ export default function ClassList() {
                                 </div>
                             )}
 
-                            {/* PREVIEW CARD */}
                             {selectedSection && (
                                 <div className="p-3 bg-gray-50 rounded-md border text-sm">
                                     <p className="font-semibold text-gray-700">
@@ -260,7 +296,6 @@ export default function ClassList() {
                 </Dialog.Dialog>
             </div>
 
-            {/* LIST OF ADDED CLASSES */}
             <div className="space-y-3">
                 {myClasses.length === 0 && (
                     <p className="text-muted-foreground text-sm italic">

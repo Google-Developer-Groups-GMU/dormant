@@ -1,92 +1,104 @@
 "use client";
 
 import { useState } from "react";
-
 import * as Table from "@/components/ui/table";
-import { ClassInfo } from "@/lib/classes";
+import { Section } from "@/lib/classes";
+import { dayMap, formatTime, timeStringToMinutes } from "@/lib/utils";
 
 export default function ClassTable() {
-    const [classes, setClasses] = useState<ClassInfo[]>([
+    const [classes, setClasses] = useState<Section[]>([
         {
             id: "1",
-            className: "Computer Science 101",
-            section: "A",
+            courseId: "CS101",
+            section: "001",
             professor: "Dr. Smith",
-            time: "9:00 AM - 10:30 AM",
-            location: "Room 204",
-            days: ["Mon", "Wed", "Fri"],
-            startDate: "1 Aug 2024",
-            endDate: "10 Dec 2024",
+            meetings: [
+                { day: 1, startTime: 540, endTime: 630, location: "Room 204" },
+                { day: 3, startTime: 540, endTime: 630, location: "Room 204" },
+                { day: 5, startTime: 540, endTime: 630, location: "Room 204" },
+            ],
         },
         {
             id: "2",
-            className: "Mathematics 201",
-            section: "B",
+            courseId: "MATH201",
+            section: "002",
             professor: "Dr. Johnson",
-            time: "11:00 AM - 12:30 PM",
-            location: "Room 305",
-            days: ["Tue", "Thu"],
-            startDate: "1 Aug 2024",
-            endDate: "10 Dec 2024",
+            meetings: [
+                { day: 2, startTime: 660, endTime: 750, location: "Room 305" },
+                { day: 4, startTime: 660, endTime: 750, location: "Room 305" },
+            ],
         },
     ]);
 
+    // grid time slots from 8:00 AM to 4:00 PM
+    const timeSlots = [
+        "8:00 AM",
+        "9:00 AM",
+        "10:00 AM",
+        "11:00 AM",
+        "12:00 PM",
+        "1:00 PM",
+        "2:00 PM",
+        "3:00 PM",
+        "4:00 PM",
+    ];
+
     return (
-        <div className="flex-1">
-            <div className="bg-white border border-ring/30 overflow-hidden">
+        <div className="flex-1 space-y-8">
+            <div className="bg-white border border-ring/30 overflow-hidden rounded-md">
                 <Table.Table>
                     <Table.TableHeader>
-                        <Table.TableRow className="bg-background hover:bg-background">
+                        <Table.TableRow className="bg-muted/50 hover:bg-muted/50">
                             <Table.TableHead>Class</Table.TableHead>
                             <Table.TableHead>Section</Table.TableHead>
                             <Table.TableHead>Professor</Table.TableHead>
-                            <Table.TableHead>Time</Table.TableHead>
-                            <Table.TableHead>Location</Table.TableHead>
-                            <Table.TableHead>Days</Table.TableHead>
-                            <Table.TableHead>Duration</Table.TableHead>
+                            <Table.TableHead>Schedule Details</Table.TableHead>
                         </Table.TableRow>
                     </Table.TableHeader>
                     <Table.TableBody>
-                        {classes.map((classInfo) => (
-                            <Table.TableRow key={classInfo.id}>
+                        {classes.length === 0 && (
+                            <Table.TableRow>
+                                <Table.TableCell
+                                    colSpan={4}
+                                    className="text-center h-24 text-muted-foreground"
+                                >
+                                    No classes added.
+                                </Table.TableCell>
+                            </Table.TableRow>
+                        )}
+                        {classes.map((section) => (
+                            <Table.TableRow key={section.id}>
                                 <Table.TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 bg-muted-foreground rounded-full flex items-center justify-center text-white text-xs">
-                                            {classInfo.className.charAt(0)}
-                                        </div>
-                                        <span className="text-muted-foreground font-medium">
-                                            {classInfo.className}
-                                        </span>
-                                    </div>
+                                    <span>{section.courseId}</span>
                                 </Table.TableCell>
                                 <Table.TableCell>
-                                    <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">
-                                        {classInfo.section}
+                                    <span className="px-2 py-1 rounded-md text-xs bg-muted text-foreground border border-ring/30">
+                                        {section.section}
                                     </span>
                                 </Table.TableCell>
-                                <Table.TableCell className="text-foreground/50">
-                                    {classInfo.professor}
-                                </Table.TableCell>
-                                <Table.TableCell className="text-foreground/50">
-                                    {classInfo.time}
-                                </Table.TableCell>
-                                <Table.TableCell className="text-foreground/50">
-                                    {classInfo.location}
+                                <Table.TableCell className="text-muted-foreground">
+                                    {section.professor}
                                 </Table.TableCell>
                                 <Table.TableCell>
-                                    <div className="flex items-center gap-1 flex-wrap">
-                                        {classInfo.days.map((day) => (
-                                            <span
-                                                key={day}
-                                                className="text-xs text-muted-foreground font-medium"
+                                    <div className="flex gap-3">
+                                        {section.meetings.map((m, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="text-xs text-muted-foreground flex items-center gap-1"
                                             >
-                                                {day}
-                                            </span>
+                                                <span className="font-semibold text-foreground">
+                                                    {dayMap[m.day]}
+                                                </span>
+                                                <span>
+                                                    {formatTime(m.startTime)} -{" "}
+                                                    {formatTime(m.endTime)}
+                                                </span>
+                                                <span className="text-muted-foreground/50">
+                                                    ({m.location})
+                                                </span>
+                                            </div>
                                         ))}
                                     </div>
-                                </Table.TableCell>
-                                <Table.TableCell className="text-foreground/50 text-xs">
-                                    {classInfo.startDate} - {classInfo.endDate}
                                 </Table.TableCell>
                             </Table.TableRow>
                         ))}
@@ -95,67 +107,88 @@ export default function ClassTable() {
             </div>
 
             {classes.length > 0 && (
-                <div className="bg-white border border-ring/30 overflow-hidden mt-3">
-                    <div className="grid grid-cols-[100px_3fr_3fr_3fr_3fr_3fr_100px] border-b border-ring/30">
-                        <div className="p-2 bg-background border-r border-ring/30 text-sm text-foreground/50">
+                <div className="bg-white border border-ring/30 overflow-hidden rounded-md">
+                    <div className="grid grid-cols-[70px_repeat(5,1fr)] border-b border-ring/30 bg-muted/50">
+                        <div className="p-1 border-r border-ring/30 text-xs font-semibold text-muted-foreground text-center">
                             Time
                         </div>
-                        {["Mon", "Tue", "Wed", "Thu", "Fri", "Weekend"].map(
-                            (day) => (
-                                <div
-                                    key={day}
-                                    className="p-2 bg-background border-r last:border-r-0 border-ring/30 text-sm text-foreground/50 text-center"
-                                >
-                                    {day}
-                                </div>
-                            )
-                        )}
+                        {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day) => (
+                            <div
+                                key={day}
+                                className="p-1 border-r last:border-r-0 border-ring/30 text-xs font-semibold text-muted-foreground text-center"
+                            >
+                                {day}
+                            </div>
+                        ))}
                     </div>
 
-                    {[
-                        "8:00 AM",
-                        "9:00 AM",
-                        "10:00 AM",
-                        "11:00 AM",
-                        "12:00 PM",
-                        "1:00 PM",
-                        "2:00 PM",
-                        "3:00 PM",
-                        "4:00 PM",
-                    ].map((time) => (
-                        <div
-                            key={time}
-                            className="grid grid-cols-[100px_3fr_3fr_3fr_3fr_3fr_100px] border-b last:border-b-0 border-ring/30"
-                        >
-                            <div className="p-2 border-r border-ring/30 text-sm text-foreground/50">
-                                {time}
-                            </div>
-                            {["Mon", "Tue", "Wed", "Thu", "Fri", "Weekend"].map(
-                                (day) => {
-                                    const classForSlot = classes.find((c) =>
-                                        c.days.includes(day)
-                                    );
+                    {timeSlots.map((timeLabel) => {
+                        const slotStart = timeStringToMinutes(timeLabel);
+                        const slotEnd = slotStart + 60;
+
+                        return (
+                            <div
+                                key={timeLabel}
+                                className="grid grid-cols-[70px_repeat(5,1fr)] border-b last:border-b-0 border-ring/30 min-h-[80px]"
+                            >
+                                <div className="border-r border-ring/30 text-xs text-muted-foreground flex items-start justify-center pt-1 bg-muted/5">
+                                    {timeLabel}
+                                </div>
+
+                                {[1, 2, 3, 4, 5].map((dayIndex) => {
+                                    // 1=Mon, 2=Tue...
+                                    // find a meeting that happens on this day AND starts in this hour slot
+                                    // NOTE: this logic assumes one class per slot for simplicity
+                                    let matchedSection = null;
+                                    let matchedMeeting = null;
+
+                                    for (const section of classes) {
+                                        const meeting = section.meetings.find(
+                                            (m) =>
+                                                m.day === dayIndex &&
+                                                m.startTime >= slotStart &&
+                                                m.startTime < slotEnd
+                                        );
+                                        if (meeting) {
+                                            matchedSection = section;
+                                            matchedMeeting = meeting;
+                                            break;
+                                        }
+                                    }
+
                                     return (
                                         <div
-                                            key={day}
-                                            className="border-r last:border-r-0 border-ring/30"
+                                            key={dayIndex}
+                                            className="border-r last:border-r-0 border-ring/30 p-1 relative"
                                         >
-                                            {classForSlot && (
-                                                <div className="bg-muted-foreground/5 p-2">
-                                                    <div className="text-xs font-medium text-muted-foreground">
-                                                        {classForSlot.className}
+                                            {matchedSection &&
+                                                matchedMeeting && (
+                                                    <div className="bg-accent border p-1 h-full flex flex-col justify-between text-xs">
+                                                        <div>
+                                                            <div className="font-semibold">
+                                                                {
+                                                                    matchedSection.courseId
+                                                                }
+                                                            </div>
+                                                            <div className="scale-90 origin-top-left">
+                                                                {
+                                                                    matchedMeeting.location
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-[10px] font-medium">
+                                                            {formatTime(
+                                                                matchedMeeting.startTime
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <div className="text-xs text-foreground/50 mt-1">
-                                                        {classForSlot.location}
-                                                    </div>
-                                                </div>
-                                            )}
+                                                )}
                                         </div>
                                     );
-                                }
-                            )}
-                        </div>
-                    ))}
+                                })}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
