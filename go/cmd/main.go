@@ -73,8 +73,8 @@ func main() {
 	r.GET("/api/sections", api.HandleGetSections)
 
 	// user schedule routes
-	r.POST("/api/user/schedule", api.SaveSchedule)
-	r.GET("/api/user/schedules", api.GetSavedSchedules)
+	r.POST("/api/users/:userID/schedules", api.SaveCurrentSchedule)
+	r.GET("/api/users/:userID/schedules", api.GetSavedCurrentSchedules)
 
 	r.Run(":5000")
 }

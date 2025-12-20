@@ -1,50 +1,33 @@
 "use client";
 
-import { useState } from "react";
+// ui components
+import { Trash2 } from "lucide-react";
 import * as Table from "@/components/ui/table";
-import { Section } from "@/lib/classes";
-import { dayMap, formatTime, timeStringToMinutes } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-export default function ClassTable() {
-    const [classes, setClasses] = useState<Section[]>([
-        {
-            id: "1",
-            courseId: "CS101",
-            section: "001",
-            professor: "Dr. Smith",
-            meetings: [
-                { day: 1, startTime: 540, endTime: 630, location: "Room 204" },
-                { day: 3, startTime: 540, endTime: 630, location: "Room 204" },
-                { day: 5, startTime: 540, endTime: 630, location: "Room 204" },
-            ],
-        },
-        {
-            id: "2",
-            courseId: "MATH201",
-            section: "002",
-            professor: "Dr. Johnson",
-            meetings: [
-                { day: 2, startTime: 660, endTime: 750, location: "Room 305" },
-                { day: 4, startTime: 660, endTime: 750, location: "Room 305" },
-            ],
-        },
-    ]);
+// util
+import {
+    dayMap,
+    formatTime,
+    timeStringToMinutes,
+    ensureMinutes,
+} from "@/lib/utils";
+import { ClassTableProps, timeSlots } from "@/lib/scheduler";
 
-    // grid time slots from 8:00 AM to 4:00 PM
-    const timeSlots = [
-        "8:00 AM",
-        "9:00 AM",
-        "10:00 AM",
-        "11:00 AM",
-        "12:00 PM",
-        "1:00 PM",
-        "2:00 PM",
-        "3:00 PM",
-        "4:00 PM",
-    ];
+export default function ClassTable({ schedule, onUpdate }: ClassTableProps) {
+    // handler for removing class by id
+    // this component is not very smart and doesnt manage its own state
+    // so we call onUpdate with the new schedule
+    // it creates a new array without the removed section (target id) and passes it to onUpdate in parent
+    const handleRemove = (id: string) => {
+        // update schedule by filtering out the removed section
+        if (onUpdate) {
+            onUpdate(schedule.filter((s) => s.id !== id));
+        }
+    };
 
     return (
-        <div className="flex-1 space-y-8">
+        <div className="flex-1 flex flex-col xl:grid xl:grid-cols-2 gap-3">
             <div className="bg-white border border-ring/30 overflow-hidden rounded-md">
                 <Table.Table>
                     <Table.TableHeader>
@@ -52,27 +35,29 @@ export default function ClassTable() {
                             <Table.TableHead>Class</Table.TableHead>
                             <Table.TableHead>Section</Table.TableHead>
                             <Table.TableHead>Professor</Table.TableHead>
-                            <Table.TableHead>Schedule Details</Table.TableHead>
+                            <Table.TableHead>Dates</Table.TableHead>
+                            <Table.TableHead>Location</Table.TableHead>
+                            <Table.TableHead className="w-[50px]"></Table.TableHead>
                         </Table.TableRow>
                     </Table.TableHeader>
                     <Table.TableBody>
-                        {classes.length === 0 && (
+                        {schedule.length === 0 && (
                             <Table.TableRow>
                                 <Table.TableCell
-                                    colSpan={4}
+                                    colSpan={5}
                                     className="text-center h-24 text-muted-foreground"
                                 >
                                     No classes added.
                                 </Table.TableCell>
                             </Table.TableRow>
                         )}
-                        {classes.map((section) => (
+                        {schedule.map((section) => (
                             <Table.TableRow key={section.id}>
                                 <Table.TableCell>
-                                    <span>{section.courseId}</span>
+                                    <span>{section.course_id}</span>
                                 </Table.TableCell>
                                 <Table.TableCell>
-                                    <span className="px-2 py-1 rounded-md text-xs bg-muted text-foreground border border-ring/30">
+                                    <span className="px-2 py-0.5 rounded-md text-xs bg-muted/50 text-foreground border border-ring/30">
                                         {section.section}
                                     </span>
                                 </Table.TableCell>
@@ -80,25 +65,46 @@ export default function ClassTable() {
                                     {section.professor}
                                 </Table.TableCell>
                                 <Table.TableCell>
-                                    <div className="flex gap-3">
+                                    <div className="flex flex-col">
                                         {section.meetings.map((m, idx) => (
                                             <div
                                                 key={idx}
-                                                className="text-xs text-muted-foreground flex items-center gap-1"
+                                                className="text-xs text-muted-foreground flex items-center"
                                             >
-                                                <span className="font-semibold text-foreground">
+                                                <span className="text-foreground w-8">
                                                     {dayMap[m.day]}
                                                 </span>
                                                 <span>
-                                                    {formatTime(m.startTime)} -{" "}
-                                                    {formatTime(m.endTime)}
-                                                </span>
-                                                <span className="text-muted-foreground/50">
-                                                    ({m.location})
+                                                    {formatTime(m.start_time)} -{" "}
+                                                    {formatTime(m.end_time)}
                                                 </span>
                                             </div>
                                         ))}
                                     </div>
+                                </Table.TableCell>
+                                <Table.TableCell>
+                                    <div className="flex flex-col">
+                                        {section.meetings.map((m, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="text-xs text-muted-foreground flex items-center"
+                                            >
+                                                <span className="text-foreground w-8">
+                                                    {m.location}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Table.TableCell>
+                                <Table.TableCell>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:cursor-pointer"
+                                        onClick={() => handleRemove(section.id)}
+                                    >
+                                        <Trash2 strokeWidth={1.5} />
+                                    </Button>
                                 </Table.TableCell>
                             </Table.TableRow>
                         ))}
@@ -106,7 +112,7 @@ export default function ClassTable() {
                 </Table.Table>
             </div>
 
-            {classes.length > 0 && (
+            {schedule.length > 0 && (
                 <div className="bg-white border border-ring/30 overflow-hidden rounded-md">
                     <div className="grid grid-cols-[70px_repeat(5,1fr)] border-b border-ring/30 bg-muted/50">
                         <div className="p-1 border-r border-ring/30 text-xs font-semibold text-muted-foreground text-center">
@@ -115,7 +121,7 @@ export default function ClassTable() {
                         {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day) => (
                             <div
                                 key={day}
-                                className="p-1 border-r last:border-r-0 border-ring/30 text-xs font-semibold text-muted-foreground text-center"
+                                className="p-1 border-r last:border-r-0 border-ring/30 text-xs text-muted-foreground text-center"
                             >
                                 {day}
                             </div>
@@ -123,35 +129,71 @@ export default function ClassTable() {
                     </div>
 
                     {timeSlots.map((timeLabel) => {
+                        // time slot iteration logic
+                        // iterate through 30 min chunks
                         const slotStart = timeStringToMinutes(timeLabel);
-                        const slotEnd = slotStart + 60;
+                        const slotEnd = slotStart + 30;
 
                         return (
                             <div
                                 key={timeLabel}
-                                className="grid grid-cols-[70px_repeat(5,1fr)] border-b last:border-b-0 border-ring/30 min-h-[80px]"
+                                className="grid grid-cols-[70px_repeat(5,1fr)] border-b last:border-b-0 border-ring/30 min-h-[30px]"
                             >
                                 <div className="border-r border-ring/30 text-xs text-muted-foreground flex items-start justify-center pt-1 bg-muted/5">
                                     {timeLabel}
                                 </div>
 
+                                {/* iterate through days of the week */}
                                 {[1, 2, 3, 4, 5].map((dayIndex) => {
-                                    // 1=Mon, 2=Tue...
-                                    // find a meeting that happens on this day AND starts in this hour slot
-                                    // NOTE: this logic assumes one class per slot for simplicity
                                     let matchedSection = null;
                                     let matchedMeeting = null;
+                                    let isStart = false;
+                                    let isEnd = false;
 
-                                    for (const section of classes) {
+                                    // overlap check
+                                    // check every section in schedule to see if it has a meeting that overlaps with this time slot
+                                    for (const section of schedule) {
                                         const meeting = section.meetings.find(
-                                            (m) =>
-                                                m.day === dayIndex &&
-                                                m.startTime >= slotStart &&
-                                                m.startTime < slotEnd
+                                            (m) => {
+                                                const start = ensureMinutes(
+                                                    m.start_time
+                                                );
+                                                const end = ensureMinutes(
+                                                    m.end_time
+                                                );
+
+                                                // IMPORTANT: standard overlap check
+                                                // some class is in this slot if:
+                                                // its on the same day AND
+                                                // its start time is before slot end AND
+                                                // its end time is after slot start
+                                                return (
+                                                    m.day === dayIndex &&
+                                                    start < slotEnd &&
+                                                    end > slotStart
+                                                );
+                                            }
                                         );
+
                                         if (meeting) {
                                             matchedSection = section;
                                             matchedMeeting = meeting;
+
+                                            // we need to know if this slot is the start of the meeting
+                                            // so we can style it differently
+                                            const start = ensureMinutes(
+                                                meeting.start_time
+                                            );
+                                            isStart =
+                                                start >= slotStart &&
+                                                start < slotEnd;
+                                            isEnd =
+                                                ensureMinutes(
+                                                    meeting.end_time
+                                                ) > slotStart &&
+                                                ensureMinutes(
+                                                    meeting.end_time
+                                                ) <= slotEnd;
                                             break;
                                         }
                                     }
@@ -159,26 +201,53 @@ export default function ClassTable() {
                                     return (
                                         <div
                                             key={dayIndex}
-                                            className="border-r last:border-r-0 border-ring/30 p-1 relative"
+                                            className="border-r last:border-r-0 border-ring/30 relative"
                                         >
                                             {matchedSection &&
                                                 matchedMeeting && (
-                                                    <div className="bg-accent border p-1 h-full flex flex-col justify-between text-xs">
-                                                        <div>
-                                                            <div className="font-semibold">
-                                                                {
-                                                                    matchedSection.courseId
-                                                                }
-                                                            </div>
-                                                            <div className="scale-90 origin-top-left">
-                                                                {
-                                                                    matchedMeeting.location
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                        <div className="text-[10px] font-medium">
-                                                            {formatTime(
-                                                                matchedMeeting.startTime
+                                                    <div
+                                                        className={`
+                                                        w-full h-full text-xs overflow-hidden px-2
+                                                        ${
+                                                            isStart
+                                                                ? "rounded-t-md border-t border-x bg-neutral-50 py-1"
+                                                                : "border-x bg-neutral-50/50"
+                                                        }
+                                                        ${
+                                                            ensureMinutes(
+                                                                matchedMeeting.end_time
+                                                            ) <= slotEnd
+                                                                ? "rounded-b-md border-b"
+                                                                : ""
+                                                        }
+                                                        border-ring/30
+                                                    `}
+                                                    >
+                                                        {isStart && (
+                                                            <>
+                                                                <div className="font-semibold truncate">
+                                                                    {
+                                                                        matchedSection.course_id
+                                                                    }
+                                                                </div>
+                                                                <div className="text-[10px] truncate">
+                                                                    {
+                                                                        matchedMeeting.location
+                                                                    }
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                        <div className="flex items-end h-full">
+                                                            {isEnd && (
+                                                                <div className="text-[10px] pb-1">
+                                                                    {formatTime(
+                                                                        matchedMeeting.start_time
+                                                                    )}{" "}
+                                                                    -{" "}
+                                                                    {formatTime(
+                                                                        matchedMeeting.end_time
+                                                                    )}
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>

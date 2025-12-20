@@ -1,15 +1,15 @@
 // the time slots for a single meeting of a section
 export interface Meeting {
     day: number; // 0 = Sunday, 1 = Monday, etc.
-    startTime: number; // minutes from midnight (e.g. 600 = 10:00 AM)
-    endTime: number; // minutes from midnight
-    location: string; // "Horizon Hall 1010"
+    start_time: number; // minutes from midnight (e.g. 600 = 10:00 AM)
+    end_time: number; // minutes from midnight
+    location: string; // "HORIZN 2014"
 }
 
 // section within a course chosen by the user
 export interface Section {
     id: string; // CRN ex) "17837"
-    courseId: string; // "CS100" - link to parent course collection
+    course_id: string; // "CS100" - link to parent course collection
     section: string; // "001" - section number
     professor: string; // "Smith, John"
 
@@ -19,7 +19,7 @@ export interface Section {
 // schedule created by the user
 export interface Schedule {
     id: string;
-    userId: string;
+    user_id: string;
     name: string; // "plan A"
     sections: Section[];
 }

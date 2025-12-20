@@ -1,7 +1,8 @@
 package api
 
 // handlers for API routes
-// schedule generation, saving schedules, etc.
+// 1. users current semester schedule saving and fetching
+// 2. schedule generation, saving schedules, etc.
 // this is about dealing with ALREADY GENERATED schedules
 // (user should be able to have multiple saved possible schedules)
 // (like plan A, plan B, ...)
@@ -16,6 +17,45 @@ import (
 	"github.com/Google-Developer-Groups-GMU/dormant/go/internal/types"
 	"github.com/gin-gonic/gin"
 )
+
+//
+// --- current schedule related handlers ---
+
+// save schedule
+func SaveCurrentSchedule(c *gin.Context) {
+	// /users/{userID}/schedules
+	userID := c.Param("userID")
+
+	var schedule types.Schedule
+	if err := c.BindJSON(&schedule); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		return
+	}
+
+	err := firestore.SaveUserSchedule(c.Request.Context(), userID, schedule)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "saved", "id": schedule.ID})
+}
+
+// get saved schedules
+func GetSavedCurrentSchedules(c *gin.Context) {
+	userID := c.Param("userID")
+
+	schedules, err := firestore.GetUserSchedules(c.Request.Context(), userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, schedules)
+}
+
+//
+// --- schedule generation related handlers ---
 
 // POST /api/generate
 // input: { "courseIds": ["CS101", "MATH200"] }
@@ -49,47 +89,26 @@ func GenerateSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, generatedSchedules)
 }
 
-// save schedule
-func SaveSchedule(c *gin.Context) {
-	// /users/{userID}/schedules
-	userID := c.Param("userID")
-
-	var schedule types.Schedule
-	if err := c.BindJSON(&schedule); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
-		return
-	}
-
-	err := firestore.SaveUserSchedule(c.Request.Context(), userID, schedule)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "saved", "id": schedule.ID})
+// save generated schedule
+func SaveGeneratedSchedule(c *gin.Context) {
+	// TODO: implement saving generated schedule to Firestore
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
 }
 
-// get saved schedules
-func GetSavedSchedules(c *gin.Context) {
-	userID := c.Param("userID")
-
-	schedules, err := firestore.GetUserSchedules(c.Request.Context(), userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, schedules)
+// get saved generated schedules
+func GetSavedGeneratedSchedules(c *gin.Context) {
+	// TODO: implement fetching saved generated schedules from Firestore
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
 }
 
 // delete saved schedule
-func DeleteSavedSchedule(c *gin.Context) {
+func DeleteGeneratedSchedule(c *gin.Context) {
 	// TODO: implement deleting saved schedule from Firestore
 	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
 }
 
 // update saved schedule
-func UpdateSavedSchedule(c *gin.Context) {
+func UpdateGeneratedSchedule(c *gin.Context) {
 	// TODO: implement updating saved schedule in Firestore
 	c.JSON(http.StatusNotImplemented, gin.H{"error": "Not implemented"})
 }

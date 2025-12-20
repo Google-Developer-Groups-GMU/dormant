@@ -1,7 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { BACKEND_URL } from "@/lib/constants";
 
 export function cn(...inputs: ClassValue[]) {
@@ -65,9 +67,19 @@ export function useAuth() {
 
 export const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+// Helper to ensure we have minutes as a number
+export const ensureMinutes = (time: number | string): number => {
+    if (typeof time === "number") return time;
+    if (typeof time === "string") return timeStringToMinutes(time);
+    return 0;
+};
+
 // convert minutes to string
 // 600 -> "10:00 AM"
-export const formatTime = (minutes: number) => {
+export const formatTime = (time: number | string) => {
+    const minutes = ensureMinutes(time);
+    if (isNaN(minutes)) return "TBA";
+
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
     const ampm = h >= 12 ? "PM" : "AM";
@@ -78,7 +90,10 @@ export const formatTime = (minutes: number) => {
 // convert string to minutes for grid logic
 // "9:00 AM" -> 540
 export const timeStringToMinutes = (timeStr: string): number => {
+    if (!timeStr) return 0;
     const [time, modifier] = timeStr.split(" ");
+    if (!time) return 0;
+
     let [hours, minutes] = time.split(":").map(Number);
     if (hours === 12) hours = 0;
     if (modifier === "PM") hours += 12;

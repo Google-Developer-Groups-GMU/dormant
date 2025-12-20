@@ -119,7 +119,6 @@ export default function LandingPage() {
                                     className="w-full h-auto object-cover"
                                 />
                             </div>
-
                             <div
                                 className={`absolute transition-all duration-500 ease-in-out ${
                                     activeCard === 1
@@ -133,7 +132,6 @@ export default function LandingPage() {
                                     className="w-full h-auto object-cover"
                                 />
                             </div>
-
                             <div
                                 className={`absolute transition-all duration-500 ease-in-out ${
                                     activeCard === 2
@@ -146,6 +144,12 @@ export default function LandingPage() {
                                     alt="img3"
                                     className="w-full h-auto object-contain"
                                 />
+                            </div>
+                            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-muted-foreground/20 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-ring rounded-full transition-all duration-100 ease-in-out"
+                                    style={{ width: `${progress}%` }}
+                                ></div>
                             </div>
                         </div>
                     </div>
