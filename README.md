@@ -1,6 +1,29 @@
+## What is this?
+
+This is something we all struggle with, planning future semesters.
+It takes too much time and effort, only to be put in a waitlist because the class just went full.
+This will help you show what schedules are possible for the next semester, hopefully it will
+buy you enough time to get you a place in a class that you wanted to take.
+
+This project is developed open-sourcy, lead by GDG@GMU members.
+
+## Tech Stack Choices
+
+#### Why Next.js?
+
+Because it is easy to learn and use. We love vercel.<br/>Had to make a choice between making things harder to pursue better performance, or accessibility. With this project being community-based, We have decided Next.js was the best option.
+
+#### Why Go?
+
+We are <i>Google</i> Developer Groups, I think you can guess why. Readable, lightweight, therefore won't cost us anything in prod. No brainer choice.
+
+#### Why firestore?
+
+Same reason as Go. We focus heavily on learning the GCP products during the semester, and what is good with that if we can't utilize it? We are using GCP firestore, not firebase. :)
+
 ## Development Setup
 
-To run this project locally, you need to connect it to your own Google Cloud / Firebase project.
+To run this project locally, you need to connect it to your own Google Cloud project.
 
 ### 1. Prerequisites
 
@@ -8,7 +31,7 @@ To run this project locally, you need to connect it to your own Google Cloud / F
 -   Node.js 20+
 -   Google Cloud Project: You need a project with **Firestore** enabled.
 
-### 2. Google Cloud & Firebase Setup
+### 2. Google Cloud & Firestore Setup
 
 1.  **Create a Project**: Go to the [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
 2.  **Enable APIs**:
